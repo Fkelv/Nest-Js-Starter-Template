@@ -11,8 +11,6 @@ import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { UserView } from './entities/usersView.entity';
 
-const saltRounds = 10;
-
 @Injectable()
 export class UsersService {
   UserView;
