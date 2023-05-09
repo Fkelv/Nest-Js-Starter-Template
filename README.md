@@ -1,7 +1,7 @@
 
 ## Description
 This Project is written using
-[Nest](https://github.com/nestjs/nest) framework ,Postgres database,.
+[Nest](https://github.com/nestjs/nest) framework ,Postgres database and Redis database.
 
 This is a TypeScript starter template with built in functionalities like user login ,siginup , email verification , user roles, pagination among other features.
 
