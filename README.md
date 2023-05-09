@@ -1,7 +1,9 @@
 
 ## Description
-This Project is written using Nest js .
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This Project is written using
+[Nest](https://github.com/nestjs/nest) framework ,Postgres database,.
+
+This is a TypeScript starter template with built in functionalities like user login ,siginup , email verification , user roles, pagination among other features.
 
 ## Installation
 
@@ -29,7 +31,7 @@ $ npm run start:prod
 
 ## Support
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+This is an  open source project. I will continue adding new features in the future
 
 ## Stay in touch
 
