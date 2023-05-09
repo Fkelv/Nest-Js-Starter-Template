@@ -1,15 +1,17 @@
 import {
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-  Index,
-  CreateDateColumn,
-  UpdateDateColumn,
   BeforeInsert,
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 import * as bcrypt from 'bcrypt';
 import { Role } from '../../auth/guards/role.enum';
+import { Exclude } from 'class-transformer';
 
 const saltRounds = 10;
 
@@ -33,13 +35,9 @@ export class User {
   @Index({ unique: true })
   email: string;
 
+  @Exclude()
   @Column()
   password: string;
-
-  @BeforeInsert()
-  async hashPassword() {
-    this.password = await bcrypt.hash(this.password, saltRounds);
-  }
 
   @Column({ default: false })
   isActive: boolean;
@@ -47,7 +45,7 @@ export class User {
   @Column({ default: false })
   isEmailVerified: boolean;
 
-  @Column('varchar', { array: true, default: '{"user"}' })
+  @Column('simple-array', { default: () => "('user')" })
   roles: Role[];
 
   @CreateDateColumn()
@@ -55,4 +53,9 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @BeforeInsert()
+  async hashPassword() {
+    this.password = await bcrypt.hash(this.password, saltRounds);
+  }
 }

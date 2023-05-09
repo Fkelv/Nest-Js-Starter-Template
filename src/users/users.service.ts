@@ -1,31 +1,29 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
 import { CreateUserDto, PasswordsDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { PageMetaDto } from 'src/pagination/page-meta.dto';
+import { PageOptionsDto } from 'src/pagination/page-options.dto';
+import { PageDto } from 'src/pagination/page.dto';
+import { ConfigService } from '@nestjs/config';
+import { Repository } from 'typeorm';
+import { UserView } from './entities/usersView.entity';
 
 const saltRounds = 10;
 
 @Injectable()
 export class UsersService {
+  UserView;
   private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
-    private dataSource: DataSource,
+    @InjectRepository(User) private usersViewRepository: Repository<UserView>,
+
+    private readonly configService: ConfigService,
   ) {}
-
-  // create(createUserDto: CreateUserDto) {
-  //   const { confirmPassword, ...rest } = createUserDto;
-
-  //   const data = this.usersRepository.create(rest);
-  //   console.log(data);
-
-  //   const user = this.usersRepository.save(data);
-
-  //   return user;
-  // }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const user = this.usersRepository.create(createUserDto);
@@ -33,21 +31,57 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async findAll(alias: string) {
-    return this.usersRepository.createQueryBuilder(alias);
+  async findAll(
+    pageOptionsDto: PageOptionsDto,
+  ): Promise<PageDto<Partial<User>>> {
+    const queryBuilder = await this.usersViewRepository.createQueryBuilder(
+      'user_view',
+    );
+    queryBuilder.select([
+      `user_view.id as id`,
+      `user_view.email as email`,
+      `user_view.firstName as firstName`,
+      `user_view.secondName as secondName`,
+      `user_view.username as username`,
+      `user_view.isActive as isActive`,
+      `user_view.roles as roles`,
+      `user_view.isEmailVerified as isEmailVerified`,
+      `user_view.createdAt as createdAt`,
+    ]);
+    queryBuilder.skip(pageOptionsDto.skip).take(pageOptionsDto.take);
+
+    const itemCount = await queryBuilder.getCount();
+    const entities = await queryBuilder.getRawMany();
+    const pageRoute = `users/fetch-users?`;
+
+    const pageMetaDto = new PageMetaDto({
+      itemCount,
+      pageRoute,
+      pageOptionsDto,
+    });
+
+    return new PageDto(entities, pageMetaDto);
   }
 
   async findOne(username: string): Promise<User | undefined> {
     return this.usersRepository.findOneBy({ username });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const user = await this.usersRepository.findOneByOrFail({
+      id,
+    });
+    const toSaveUser = this.usersRepository.create({
+      ...user,
+      ...updateUserDto,
+    });
+    return await this.usersRepository.save(toSaveUser);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number) {
+    return await this.usersRepository.delete({ id });
   }
+
   async getByEmail(email: string): Promise<User | undefined> {
     return this.usersRepository.findOneBy({ email });
   }
@@ -78,4 +112,5 @@ export class UsersService {
       { password: await bcrypt.hash(password, saltRounds) },
     );
   }
+
 }
