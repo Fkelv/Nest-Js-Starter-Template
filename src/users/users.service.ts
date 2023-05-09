@@ -26,45 +26,69 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const user = this.usersRepository.create(createUserDto);
+    try {
+      const user = this.usersRepository.create(createUserDto);
 
-    return this.usersRepository.save(user);
+      return this.usersRepository.save(user);
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(
+        'Sorry An Error Occurred !',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async findAll(
     pageOptionsDto: PageOptionsDto,
   ): Promise<PageDto<Partial<User>>> {
-    const queryBuilder = await this.usersViewRepository.createQueryBuilder(
-      'user_view',
-    );
-    queryBuilder.select([
-      `user_view.id as id`,
-      `user_view.email as email`,
-      `user_view.firstName as firstName`,
-      `user_view.secondName as secondName`,
-      `user_view.username as username`,
-      `user_view.isActive as isActive`,
-      `user_view.roles as roles`,
-      `user_view.isEmailVerified as isEmailVerified`,
-      `user_view.createdAt as createdAt`,
-    ]);
-    queryBuilder.skip(pageOptionsDto.skip).take(pageOptionsDto.take);
+    try {
+      const queryBuilder = await this.usersViewRepository.createQueryBuilder(
+        'user_view',
+      );
+      queryBuilder.select([
+        `user_view.id as id`,
+        `user_view.email as email`,
+        `user_view.firstName as firstName`,
+        `user_view.secondName as secondName`,
+        `user_view.username as username`,
+        `user_view.isActive as isActive`,
+        `user_view.roles as roles`,
+        `user_view.isEmailVerified as isEmailVerified`,
+        `user_view.createdAt as createdAt`,
+      ]);
+      queryBuilder.skip(pageOptionsDto.skip).take(pageOptionsDto.take);
 
-    const itemCount = await queryBuilder.getCount();
-    const entities = await queryBuilder.getRawMany();
-    const pageRoute = `users/fetch-users?`;
+      const itemCount = await queryBuilder.getCount();
+      const entities = await queryBuilder.getRawMany();
+      const pageRoute = `users/fetch-users?`;
 
-    const pageMetaDto = new PageMetaDto({
-      itemCount,
-      pageRoute,
-      pageOptionsDto,
-    });
+      const pageMetaDto = new PageMetaDto({
+        itemCount,
+        pageRoute,
+        pageOptionsDto,
+      });
 
-    return new PageDto(entities, pageMetaDto);
+      return new PageDto(entities, pageMetaDto);
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(
+        'Records Not Found !',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async findOne(username: string): Promise<User | undefined> {
-    return this.usersRepository.findOneBy({ username });
+    try {
+      return this.usersRepository.findOneBy({ username });
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(
+        'Sorry Records Not Found !',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
@@ -76,14 +100,39 @@ export class UsersService {
       ...updateUserDto,
     });
     return await this.usersRepository.save(toSaveUser);
+
+    try {
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(
+        'Sorry An Error Occurred !',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async remove(id: number) {
-    return await this.usersRepository.delete({ id });
+    try {
+      return await this.usersRepository.delete({ id });
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(
+        'Sorry An Error Occurred !',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async getByEmail(email: string): Promise<User | undefined> {
-    return this.usersRepository.findOneBy({ email });
+    try {
+      return this.usersRepository.findOneBy({ email });
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(
+        'Sorry An Error Occurred !',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async markEmailAsConfirmed(email: string): Promise<boolean> {
@@ -102,15 +151,30 @@ export class UsersService {
   }
 
   async getById(id: number): Promise<User | undefined> {
-    return this.usersRepository.findOneBy({ id });
+    try {
+      return await this.usersRepository.findOneBy({ id });
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(
+        'Sorry An Error Occurred !',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async updatePassword(passwordsDto: PasswordsDto) {
-    const { email, newPassword: password } = passwordsDto;
-    await this.usersRepository.update(
-      { email },
-      { password: await bcrypt.hash(password, saltRounds) },
-    );
+    try {
+      const { email, newPassword: password } = passwordsDto;
+      await this.usersRepository.update(
+        { email },
+        { password: await bcrypt.hash(password, saltRounds) },
+      );
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(
+        'Sorry An Error Occurred !',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
-
 }
