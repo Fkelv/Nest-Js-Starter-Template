@@ -5,8 +5,10 @@ import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Role } from './guards/role.enum';
 import { Roles } from './guards/roles.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('auth')
+@ApiBearerAuth('JWT')
 export class AuthController {
   constructor(private authService: AuthService) {}
   @Public()
