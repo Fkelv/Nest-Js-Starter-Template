@@ -72,10 +72,7 @@ export class UsersService {
       return new PageDto(entities, pageMetaDto);
     } catch (e) {
       this.logger.error(e);
-      throw new HttpException(
-        'Records Not Found !',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new HttpException('Records Not Found !', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -167,7 +164,12 @@ export class UsersService {
       const { email, newPassword: password } = passwordsDto;
       await this.usersRepository.update(
         { email },
-        { password: await bcrypt.hash(password, saltRounds) },
+        {
+          password: await bcrypt.hash(
+            password,
+            this.configService.get('SALT_ROUND'),
+          ),
+        },
       );
     } catch (e) {
       this.logger.error(e);
