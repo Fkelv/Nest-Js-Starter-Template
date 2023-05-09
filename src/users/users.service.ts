@@ -87,16 +87,15 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.usersRepository.findOneByOrFail({
-      id,
-    });
-    const toSaveUser = this.usersRepository.create({
-      ...user,
-      ...updateUserDto,
-    });
-    return await this.usersRepository.save(toSaveUser);
-
     try {
+      const user = await this.usersRepository.findOneByOrFail({
+        id,
+      });
+      const toSaveUser = this.usersRepository.create({
+        ...user,
+        ...updateUserDto,
+      });
+      return await this.usersRepository.save(toSaveUser);
     } catch (e) {
       this.logger.error(e);
       throw new HttpException(
